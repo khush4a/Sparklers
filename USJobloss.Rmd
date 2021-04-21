@@ -1,0 +1,112 @@
+---
+title: "USjoblossvisuals"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r US Jobloss Data loading }
+jobloss<-read.csv("lossOfJob.csv")
+jobloss
+head(jobloss)
+names(jobloss)
+sapply(jobloss,class)
+attach(jobloss)
+dim(jobloss)
+```
+```{r US Jobloss Data visualization}
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+
+# Dataframe creation
+df<-data.frame(jobloss$Group,jobloss$Subgroup,jobloss$Percent)
+df3<-df[df$jobloss.Group == "Age group", ]
+df3
+#df4 for Group Chronic Conditions
+df4<-df[df$jobloss.Group == "Chronic conditions", ]
+df4
+ 
+#df5 for Education 
+ df5<-df[df$jobloss.Group == "Eduction", ]
+df5
+
+```
+```{r jobloss Percent Vs Agegroup}
+ggplot(df3, aes(x = jobloss.Subgroup, y = jobloss.Percent)) +
+  geom_bar(
+    aes(color = jobloss.Subgroup, fill = jobloss.Subgroup),
+    stat = "identity", position = position_stack()
+  ) +
+  scale_color_manual(values = c("#0073C2FF", "#EFC000FF","springgreen4"))+
+  scale_fill_manual(values = c("#0073C2FF", "#EFC000FF","springgreen4"))
+```
+```{r jobloss Percent Vs Chronic Conditions}
+ggplot(df4, aes(x = jobloss.Subgroup, y = jobloss.Percent)) +
+  geom_bar(
+    aes(color = jobloss.Subgroup, fill = jobloss.Subgroup),
+    stat = "identity", position = position_stack()
+  ) +
+  scale_color_manual(values = c("#0073C2FF", "#EFC000FF","springgreen4","plum1"))+
+  scale_fill_manual(values = c("#0073C2FF", "#EFC000FF","springgreen4","plum1"))
+```
+```{r jobloss Percent Vs Education}
+df<-data.frame(jobloss$Group,jobloss$Subgroup,jobloss$Percent)
+df5<-df[df$jobloss.Group == "Education", ]
+
+ggplot(df5, aes(x = jobloss.Subgroup, y = jobloss.Percent)) +
+  geom_bar(
+    aes(color = jobloss.Subgroup, fill = jobloss.Subgroup),
+    stat = "identity", position = position_stack()
+  ) +
+  scale_color_manual(values = c("#0073C2FF", "#EFC000FF","springgreen4"))+
+  scale_fill_manual(values = c("#0073C2FF", "#EFC000FF","springgreen4"))
+```
+
+
+```{r jobloss Percent Vs Race/Hispanic origin}
+df<-data.frame(jobloss$Group,jobloss$Subgroup,jobloss$Percent)
+df6<-df[df$jobloss.Group == "Race/Hispanic origin", ]
+
+ggplot(df6, aes(x = jobloss.Subgroup, y = jobloss.Percent)) +
+  geom_bar(
+    aes(color = jobloss.Subgroup, fill = jobloss.Subgroup),
+    stat = "identity", position = position_stack()
+  ) +
+  scale_color_manual(values = c("#0073C2FF", "#EFC000FF","springgreen4","plum1"))+
+  scale_fill_manual(values = c("#0073C2FF", "#EFC000FF","springgreen4","plum1"))
+```
+```{r jobloss Percent Vs Sex}
+df<-data.frame(jobloss$Group,jobloss$Subgroup,jobloss$Percent)
+df7<-df[df$jobloss.Group == "Sex", ]
+
+ggplot(df7, aes(x = jobloss.Subgroup, y = jobloss.Percent)) +
+  geom_bar(
+    aes(color = jobloss.Subgroup, fill = jobloss.Subgroup),
+    stat = "identity", position = position_stack()
+  ) +
+  scale_color_manual(values = c("#0073C2FF", "#EFC000FF"))+
+  scale_fill_manual(values = c("#0073C2FF", "#EFC000FF"))
+``` 
+```{r jobloss Percent Vs Urbanization}
+df<-data.frame(jobloss$Group,jobloss$Subgroup,jobloss$Percent)
+df8<-df[df$jobloss.Group == "Urbanization", ]
+
+ggplot(df8, aes(x = jobloss.Subgroup, y = jobloss.Percent)) +
+  geom_bar(
+    aes(color = jobloss.Subgroup, fill = jobloss.Subgroup),
+    stat = "identity", position = position_stack()
+  ) +
+  scale_color_manual(values = c("#0073C2FF", "#EFC000FF"))+
+  scale_fill_manual(values = c("#0073C2FF", "#EFC000FF"))
+  
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

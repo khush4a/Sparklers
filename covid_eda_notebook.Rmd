@@ -1,0 +1,49 @@
+---
+title: "Covid cases EDA"
+output: html_notebook
+---
+
+load data
+
+```{r}
+covid <- read.csv('data/us-counties.csv', header = TRUE, stringsAsFactors = TRUE)
+summary(covid)
+```
+convert date
+
+```{r}
+covid$date <- as.Date(covid$date)
+summary(covid$date)
+```
+
+plot cumulated cases
+```{r}
+sum.case.each.day <- aggregate(covid$cases, by = list(covid$date), FUN = sum, na.rm = TRUE)
+# head(sum.case.each.day)
+plot(sum.case.each.day$Group.1, sum.case.each.day$x, type = 'l', 
+     xlab = 'Date', main = 'US cases', ylab = 'Cumulated cases')
+```
+
+plot new cases
+```{r}
+sum.case.each.day$new_cases <- c(0, diff(sum.case.each.day$x))
+plot(sum.case.each.day$Group.1, sum.case.each.day$new_cases, type = 'l', 
+     xlab = 'Date', main = 'US new cases', ylab = 'new cases', xaxt = 'n')
+axis(1, sum.case.each.day$Group.1, format(sum.case.each.day$Group.1, "%b %y"), cex.axis = .7)
+```
+plot cumulated deaths
+```{r}
+sum.death.each.day <- aggregate(covid$deaths, by = list(covid$date), FUN = sum, na.rm = TRUE)
+# head(sum.death.each.day)
+plot(sum.death.each.day$Group.1, sum.death.each.day$x, type = 'l', 
+     xlab = 'Date', main = 'US deaths', ylab = 'Cumulated deaths')
+```
+
+plot new deaths
+```{r}
+sum.death.each.day$new_deaths <- c(0, diff(sum.death.each.day$x))
+plot(sum.death.each.day$Group.1, sum.death.each.day$new_deaths, type = 'l', 
+     xlab = 'Date', main = 'US new deaths', ylab = 'new deaths', xaxt = 'n')
+axis(1, sum.death.each.day$Group.1, format(sum.death.each.day$Group.1, "%b %y"), cex.axis = .7)
+```
+

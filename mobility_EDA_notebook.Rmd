@@ -1,0 +1,152 @@
+---
+title: "Mobility EDA"
+output:
+  html_document:
+    df_print: paged
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+Read in mobility data
+
+```{r}
+data1 <- read.csv('data/2020_US_Region_Mobility_Report.csv', header = TRUE)
+data2 <- read.csv('data/2021_US_Region_Mobility_Report.csv', header = TRUE)
+data <- rbind(data1, data2)
+# test with small dataset first
+#data <- read.csv('data/2021_US_Region_Mobility_Report.csv', header = TRUE)
+```
+
+Data inspection and cleaning
+```{r}
+head(data)
+```
+
+```{r}
+summary(data)
+```
+
+```{r}
+names(data)
+```
+
+remove column metro_area - all NAs, and place_id - not meaningful
+```{r}
+data = data[, -c(5,8)]
+summary(data)
+```
+
+convert columns to factors (country_region_code, country_region, sub_region_1, sub_region_2, iso_3166_2_code, census_fips_code)
+```{r}
+for (i in c(1:6)){
+  data[,i] <- as.factor(data[,i])
+}
+summary(data)
+```
+
+remove country_region_code, country_region
+```{r}
+data = data[, -c(1,2)]
+summary(data)
+```
+
+convert date
+```{r}
+data$date <-  as.Date(data$date)
+# tail(time)
+year <- as.numeric((format(data$date, '%Y')))
+month <- as.numeric((format(data$date, '%m')))
+data <- cbind(data, year)
+data <- cbind(data, month)
+summary(data)
+```
+
+EDA
+
+1. Check histogram of numerical columns
+```{r}
+par(mfrow = c(2,3))
+for (i in c(6:11)){
+  hist(data[,i], xlab = toupper(sub("_percent_change_from_baseline","", names(data)[i])), main = 'Percent_Change', xlim = c(-100,100))
+}
+```
+2. Check categorical column sub_region_1
+```{r}
+dotchart(table(data$sub_region_1)[order(table(data$sub_region_1))], cex = 0.5)
+
+```
+3. Mobility change with respect to date
+```{r}
+par(mfrow = c(2,3))
+for (i in c(6:11)){
+  mean.percent.change <- aggregate(data[,i], by = list(data$date), FUN = mean, na.rm = TRUE)
+  plot(mean.percent.change$Group.1, mean.percent.change$x, type = 'l', 
+       xlab = 'Date', main = toupper(sub("_percent_change_from_baseline","", names(data)[i])), ylab = 'Percent_Change', xaxt = 'n')
+  axis(1, mean.percent.change$Group.1, format(mean.percent.change$Group.1, "%b %y"), cex.axis = .7)
+
+}
+```
+4. Add reference of covid new cases
+```{r}
+# preparation
+library(latticeExtra)
+# colnames(sum.case.each.day)[2] <- 'cum_cases'
+```
+
+```{r}
+# par(mfrow = c(2,3))
+for (i in c(6:11)){
+  mean.percent.change <- aggregate(data[,i], by = list(data$date), FUN = mean, na.rm = TRUE)
+  combined <- inner_join(sum.case.each.day, mean.percent.change, by = NULL, copy = FALSE)
+
+  obj1 <- xyplot(combined$x ~ combined$Group.1, type = 'l', col = 'black',
+     xlab = 'Date', ylab = toupper(sub("_percent_change_from_baseline","", names(data)[i])), main = 'Percent_Change', xaxt = 'n')
+  obj2 <- xyplot(combined$new_cases ~ combined$Group.1, type = 'l', col = 'grey', ylab = 'Covid new cases')
+  plot.name <- paste('plot',  as.character(i), sep = "") 
+  assign(plot.name, doubleYScale(obj1, obj2, add.ylab2 = TRUE, use.style=FALSE ))
+}
+
+```
+```{r}
+library(grid)
+library(gridExtra)
+grid.arrange(plot6,plot7, plot8, ncol=3)
+
+```
+
+```{r}
+grid.arrange(plot9,plot10, plot11, ncol=3)
+
+```
+
+Identify abnormal date
+```{r}
+i = 6
+mean.percent.change <- aggregate(data[,i], by = list(data$date), FUN = mean, na.rm = TRUE)
+plot(mean.percent.change$Group.1, mean.percent.change$x, type = 'l', 
+     xlab = 'Date', ylab = toupper(sub("_percent_change_from_baseline","", names(data)[i])), main = 'Percent_Change')
+# identify(mean.percent.change$Group.1, mean.percent.change$x )
+```
+```{r}
+plot(mean.percent.change$Group.1, mean.percent.change$x, type = 'l', 
+     xlab = 'Date', ylab = toupper(sub("_percent_change_from_baseline","", names(data)[i])), main = 'Percent_Change')
+identify(mean.percent.change$Group.1, mean.percent.change$x )
+```
+
+
+```{r}
+mean.percent.change$Group.1[315]
+```
+Around Christmas, the mobility changes abruptly, and this is the peak of new cases.
